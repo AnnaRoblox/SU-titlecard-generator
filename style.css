@@ -58,6 +58,7 @@ body {
 canvas#ep-canvas {
     display: inline;
     background-size: 100%;
+    background-color: transparent;
 }
 
 canvas#credits-canvas {

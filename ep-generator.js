@@ -23,6 +23,7 @@ var useRandMask = document.getElementById("random-text-mask");
 var useRandBg = document.getElementById("random-background");
 var useRandHue = document.getElementById("random-hue");
 var hueDeg = document.getElementById("hue-degrees");
+var useTransparentBg = document.getElementById("transparent-background");
 
 var useCreditsBox = document.getElementById("use-credits-box");
 var useDoublesBox = document.getElementById("use-double-credits-box");
@@ -260,15 +261,10 @@ function updateCanvas(caller) {
 	var backgroundImage = new Image();
 	mask = new Image();
 	mask.src = (userMask.src == "") ? getRandomImage(maskArray, "assets/overlays/") : userMask.src;
-	backgroundImage.src = (userBackground.src == "") ? getRandomImage(bgArray, 'assets/titlecards/') : userBackground.src;
-	if(useRandBg.checked && caller === "button") {
-		backgroundImage.src = getRandomImage(bgArray, 'assets/titlecards/');
-	}
-	if(useRandMask.checked && caller === "button") {
-		mask.src = getRandomImage(maskArray, "assets/overlays/");
-	}
-	if(backgroundImage.complete) {
-		bgctx.drawImage(backgroundImage, 0, 0, bgcanvas.width, bgcanvas.height);
+	
+	// Handle transparent background option
+	if(useTransparentBg.checked) {
+		// Keep background transparent, don't load an image
 		if(mask.complete) {
 			updateCanvasText();
 		} else {
@@ -276,11 +272,12 @@ function updateCanvas(caller) {
 				updateCanvasText();
 			};
 		}
-		if(useCreditsBox.checked) drawCreditsBox();
-		bgctx.drawImage(credcanvas, 0, 0);
-		bgctx.drawImage(txtcanvas, 0, 0);
 	} else {
-		backgroundImage.onload = function() {
+		backgroundImage.src = (userBackground.src == "") ? getRandomImage(bgArray, 'assets/titlecards/') : userBackground.src;
+		if(useRandBg.checked && caller === "button") {
+			backgroundImage.src = getRandomImage(bgArray, 'assets/titlecards/');
+		}
+		if(backgroundImage.complete) {
 			bgctx.drawImage(backgroundImage, 0, 0, bgcanvas.width, bgcanvas.height);
 			if(mask.complete) {
 				updateCanvasText();
@@ -289,11 +286,24 @@ function updateCanvas(caller) {
 					updateCanvasText();
 				};
 			}
-			if(useCreditsBox.checked) drawCreditsBox();
-			bgctx.drawImage(credcanvas, 0, 0);
-			bgctx.drawImage(txtcanvas, 0, 0);
-		};
+		} else {
+			backgroundImage.onload = function() {
+				bgctx.drawImage(backgroundImage, 0, 0, bgcanvas.width, bgcanvas.height);
+				if(mask.complete) {
+					updateCanvasText();
+				} else {
+					mask.onload = function() {
+						updateCanvasText();
+					};
+				}
+			};
+		}
 	}
+	
+	if(useCreditsBox.checked) drawCreditsBox();
+	bgctx.drawImage(credcanvas, 0, 0);
+	bgctx.drawImage(txtcanvas, 0, 0);
+	
 	if(caller === "button") updateCanvasHue();
 	//drawCreditsBox();
 	//drawCreditsText();
